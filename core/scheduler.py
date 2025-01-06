@@ -15,10 +15,23 @@ class Scheduler:
         schedule.run_pending()
 
     def schedule_tasks(self):
-        """Configures the schedule for all tasks. (Currently basic)"""
-        # This is a very basic schedule for demonstration purposes.
-        # We'll make this configurable later.
-        schedule.every(10).seconds.do(self.task_manager.execute_all_tasks)
+        """Configures the schedule for all tasks."""
+        for task in self.task_manager.list_tasks():
+            if task.schedule:
+                interval = task.schedule.get("interval")
+                at_time = task.schedule.get("at")
+
+                if interval:
+                    if at_time:
+                        schedule.every(interval).seconds.at(at_time).do(task.execute)
+                    else:
+                        schedule.every(interval).seconds.do(task.execute)
+                elif at_time:
+                    schedule.every().day.at(at_time).do(task.execute)
+                else:
+                    print(
+                        f"Warning: Invalid schedule for task: {task.source} -> {task.destination}"
+                    )
 
     def start(self):
         """Starts the scheduler in a separate thread."""

@@ -10,11 +10,12 @@ from core.connectors.file_sync_interface import (
 
 
 class SyncTask(abc.ABC):
-    def __init__(self, source, destination, task_type, options=None):
+    def __init__(self, source, destination, task_type, options=None, schedule=None):
         self.source = source
         self.destination = destination
         self.task_type = task_type
         self.options = options or {}
+        self.schedule = schedule or {}  # Add schedule attribute
 
     @abc.abstractmethod
     def execute(self):
@@ -28,6 +29,7 @@ class SyncTask(abc.ABC):
             "destination": self.destination,
             "task_type": self.task_type,
             "options": self.options,
+            "schedule": self.schedule,
         }
 
     @staticmethod
@@ -81,6 +83,7 @@ class TaskManager:
                 task_type = task_dict["task_type"]
                 if task_type in self.task_types:
                     task_class = self.task_types[task_type]
+                    # Include schedule when creating tasks.
                     task = task_class.from_dict(task_dict)
                     self.tasks.append(task)
                 else:
@@ -97,9 +100,14 @@ class TaskManager:
 
 class FileSyncTask(SyncTask):
     def __init__(
-        self, source, destination, options=None, connector: FileSyncInterface = None
+        self,
+        source,
+        destination,
+        options=None,
+        schedule=None,
+        connector: FileSyncInterface = None,
     ):
-        super().__init__(source, destination, "file_sync", options)
+        super().__init__(source, destination, "file_sync", options, schedule)
         self.connector = connector
 
     def execute(self):
@@ -282,5 +290,6 @@ class FileSyncTask(SyncTask):
         return FileSyncTask(
             task_dict["source"],
             task_dict["destination"],
-            task_dict["options"],
+            task_dict.get("options"),
+            task_dict.get("schedule"),  # Pass schedule to constructor
         )
