@@ -1,13 +1,15 @@
 import abc
+import hashlib
 import os
 from datetime import datetime
-import hashlib
 
+from core.connectors.dropbox_connector import DropboxConnector
 from core.connectors.file_sync_interface import (
-    FileSyncInterface,
     FileSynchronizationError,
+    FileSyncInterface,
 )
-
+from core.connectors.local_file_connector import LocalFileConnector
+from core.connectors.google_drive_connector import GoogleDriveConnector
 
 class SyncTask(abc.ABC):
     def __init__(self, source, destination, task_type, options=None, schedule=None):
@@ -74,6 +76,16 @@ class TaskManager:
         for task in self.tasks:
             task.execute()
 
+    def create_connector(self, destination):
+        """Creates a connector instance based on the destination URI."""
+        if destination.startswith("dropbox://"):
+            return DropboxConnector(self.config_manager)
+        elif destination.startswith("googledrive://"):
+            return GoogleDriveConnector(self.config_manager)
+        else:
+            # Default to local file connector
+            return LocalFileConnector()
+
     def load_tasks(self):
         """Loads tasks from the configuration file."""
         tasks_data = self.config_manager.get_config("tasks", [])
@@ -83,8 +95,10 @@ class TaskManager:
                 task_type = task_dict["task_type"]
                 if task_type in self.task_types:
                     task_class = self.task_types[task_type]
-                    # Include schedule when creating tasks.
-                    task = task_class.from_dict(task_dict)
+                    # get the connector
+                    connector = self.create_connector(task_dict["destination"])
+                    # Include schedule when creating tasks
+                    task = task_class.from_dict(task_dict, connector)
                     self.tasks.append(task)
                 else:
                     print(f"Warning: Unknown task type '{task_type}'")
@@ -285,11 +299,12 @@ class FileSyncTask(SyncTask):
         return f"{base}_conflict_{timestamp}{ext}"
 
     @staticmethod
-    def from_dict(task_dict):
+    def from_dict(task_dict, connector):
         """Creates a FileSyncTask object from a dictionary."""
         return FileSyncTask(
             task_dict["source"],
             task_dict["destination"],
             task_dict.get("options"),
-            task_dict.get("schedule"),  # Pass schedule to constructor
+            task_dict.get("schedule"),
+            connector,
         )

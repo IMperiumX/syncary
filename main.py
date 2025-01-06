@@ -2,6 +2,8 @@ from config.config_manager import ConfigurationManager
 from core.task_manager import TaskManager, FileSyncTask
 from core.scheduler import Scheduler
 from core.connectors.local_file_connector import LocalFileConnector
+from core.connectors.dropbox_connector import DropboxConnector
+
 import time
 import os
 
@@ -12,17 +14,14 @@ if __name__ == "__main__":
     # Initialize Task Manager
     task_manager = TaskManager(config_manager)
 
-    # Create a LocalFileConnector
-    local_connector = LocalFileConnector()
-
     # Register the FileSyncTask type
     task_manager.register_task_type("file_sync", FileSyncTask)
 
     # Define source and destination folders
-    source_folder = "test_source"
-    destination_folder = "test_destination"
+    source_folder = "test_source"  # This will be the local folder
+    destination_folder = "dropbox://remote_folder"  # Use "dropbox://" prefix
 
-    # Create source folder and files for testing
+    # Create source folder and files for testing (locally)
     os.makedirs(source_folder, exist_ok=True)
     with open(f"{source_folder}/file1.txt", "w") as f:
         f.write("Content of file 1")
@@ -32,19 +31,19 @@ if __name__ == "__main__":
     with open(f"{source_folder}/subfolder/file3.txt", "w") as f:
         f.write("Content of file 3")
 
+    local_connector = LocalFileConnector()  # Use LocalFileConnector for the source
+    dropbox_connector = DropboxConnector(config_manager)  # Use DropboxConnector for the destination
     # Create and add a task (if there are none in the config)
     if not task_manager.list_tasks():
-        # Pass the connector when creating the task
         task1 = FileSyncTask(
             source_folder,
             destination_folder,
-            {
-                "delete": True,
-                "conflict_resolution": "prompt",
-            },
-            connector=local_connector,
-        )
+            {"delete": True, "conflict_resolution": "prompt"},
+            {"interval": 60},
+            dropbox_connector
+        )  # Pass connector instance to the task
         task_manager.add_task(task1)
+
     # Initialize Scheduler
     scheduler = Scheduler(task_manager)
 
@@ -52,7 +51,7 @@ if __name__ == "__main__":
     print("Tasks:")
     for task in task_manager.list_tasks():
         print(
-            f"- {task.source} -> {task.destination} ({task.task_type}, options: {task.options})"
+            f"- {task.source} -> {task.destination} ({task.task_type}, options: {task.options}, schedule: {task.schedule})"
         )
 
     # Start the scheduler
