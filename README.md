@@ -14,6 +14,10 @@ Syncary is a Python library for synchronizing and managing various types of data
 - Support for calendar services (Google Calendar, Apple Calendar, Outlook)
 - Support for contact management services (Google Contacts, iCloud, Microsoft Exchange)
 
+## Archicture Overview
+
+![Arch](https://raw.githubusercontent.com/IMperiumX/logos/refs/heads/main/Syncary/arc.svg)
+
 ## Installation
 
 You can install Syncary using pip:
@@ -25,26 +29,70 @@ pip install syncary
 ## Quick Start
 
 ```python
-import syncary
 
-# Initialize a sync manager
-sync_manager = syncary.SyncManager()
+if __name__ == "__main__":
+    # Initialize Configuration Manager
+    config_manager = ConfigurationManager("settings.json")
 
-# Add sync tasks
-sync_manager.add_task(
-    source="local_folder",
-    destination="dropbox://remote_folder",
-    sync_type="files"
-)
+    # Initialize Task Manager
+    task_manager = TaskManager(config_manager)
 
-sync_manager.add_task(
-    source="google_calendar",
-    destination="apple_calendar",
-    sync_type="calendar"
-)
+    # Create a LocalFileConnector
+    local_connector = LocalFileConnector()
 
-# Start synchronization
-sync_manager.sync_all()
+    # Register the FileSyncTask type
+    task_manager.register_task_type("file_sync", FileSyncTask)
+
+    # Define source and destination folders
+    source_folder = "test_source"
+    destination_folder = "test_destination"
+
+    # Create source folder and files for testing
+    os.makedirs(source_folder, exist_ok=True)
+    with open(f"{source_folder}/file1.txt", "w") as f:
+        f.write("Content of file 1")
+    with open(f"{source_folder}/file2.txt", "w") as f:
+        f.write("Content of file 2")
+    os.makedirs(f"{source_folder}/subfolder", exist_ok=True)
+    with open(f"{source_folder}/subfolder/file3.txt", "w") as f:
+        f.write("Content of file 3")
+
+    # Create and add a task (if there are none in the config)
+    if not task_manager.list_tasks():
+        # Pass the connector when creating the task
+        task1 = FileSyncTask(
+            source_folder,
+            destination_folder,
+            {
+                "delete": True,
+                "conflict_resolution": "prompt",
+            },
+            connector=local_connector,
+        )
+        task_manager.add_task(task1)
+    # Initialize Scheduler
+    scheduler = Scheduler(task_manager)
+
+    # List tasks
+    print("Tasks:")
+    for task in task_manager.list_tasks():
+        print(
+            f"- {task.source} -> {task.destination} ({task.task_type}, options: {task.options})"
+        )
+
+    # Start the scheduler
+    print("Starting scheduler...")
+    scheduler.start()
+
+    try:
+        # Keep the main thread alive to allow the scheduler to run
+        while True:
+            time.sleep(1)
+    except KeyboardInterrupt:
+        print("Stopping scheduler...")
+        scheduler.stop()
+        print("Exiting.")
+
 ```
 
 ## Documentation
@@ -91,36 +139,55 @@ This README assumes that "Syncary" is a synchronization library that can handle 
 ## Advanced Features
 
 - [ ] Implement end-to-end encryption for synced files
+
 - [ ] Add support for more cloud services (Box, Amazon S3, etc.)
+
 - [ ] Develop a file deduplication system
 
 - [ ] Add support for shared calendars
+
 - [ ] Implement calendar-specific color coding
+
 - [ ] Develop support for calendar permissions and sharing
 
 - [ ] Add support for social media profile linking
+
 - [ ] Implement contact merge suggestions
+
 - [ ] Develop a contact deduplication system
 
 - [ ] Implement bookmark synchronization across browsers
+
 - [ ] Develop password manager sync capabilities
+
 - [ ] Add support for note synchronization (Evernote, OneNote, etc.)
 
 - [ ] Implement a plugin system for easy extension
+
 - [ ] Develop advanced reporting and analytics
+
 - [ ] Create a web interface for remote management
 
 - [ ] Optimize sync algorithms for improved speed
+
 - [ ] Implement delta sync to reduce data transfer
+
 - [ ] Develop support for multi-threaded and distributed sync operations
+
 - [ ] Add support for syncing between multiple devices simultaneously
 
 - [ ] Implement team and organization management
+
 - [ ] Develop advanced access control and permissions
+
 - [ ] Add support for compliance and auditing features
+
 - [ ] Implement advanced encryption and security features
 
 - Continuous improvement of documentation
+
 - Regular updates to supported service APIs
+
 - Bug fixes and performance enhancements
+
 - Community feedback incorporation
