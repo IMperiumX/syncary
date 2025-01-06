@@ -1,6 +1,8 @@
 import abc
 import os
 from datetime import datetime
+import hashlib
+
 from core.connectors.file_sync_interface import (
     FileSyncInterface,
     FileSynchronizationError,
@@ -116,6 +118,17 @@ class FileSyncTask(SyncTask):
         except Exception as e:
             print(f"An unexpected error occurred: {e}")
 
+    def _calculate_checksum(self, file_path):
+        """Calculates the SHA-256 checksum of a file."""
+        hasher = hashlib.sha256()
+        with open(file_path, "rb") as f:
+            while True:
+                chunk = f.read(4096)  # Read in chunks
+                if not chunk:
+                    break
+                hasher.update(chunk)
+        return hasher.hexdigest()
+
     def _sync_recursive(self, source_root, destination_root, relative_path):
         """Recursively synchronizes files and folders.
 
@@ -160,7 +173,6 @@ class FileSyncTask(SyncTask):
                     elif dest_entry["type"] == "folder":
                         self.connector.delete_file(dest_entry["path"])
                         print(f"Deleted folder: {dest_entry['path']}")
-
         # Iterate through source entries and compare with destination
         for name, source_entry in source_files.items():
             source_entry_path = source_entry["path"]
@@ -179,10 +191,10 @@ class FileSyncTask(SyncTask):
                     dest_entry = destination_files[name]
                     source_mtime = os.path.getmtime(source_entry_path)
                     dest_mtime = os.path.getmtime(dest_entry["path"])
-                    source_size = os.path.getsize(source_entry_path)
-                    dest_size = os.path.getsize(dest_entry["path"])
+                    source_checksum = self._calculate_checksum(source_entry_path)
+                    dest_checksum = self._calculate_checksum(dest_entry["path"])
 
-                    if source_mtime > dest_mtime and source_size != dest_size:
+                    if source_checksum != dest_checksum:
                         # Conflict detected!
                         conflict_resolution = self.options.get(
                             "conflict_resolution", "prompt"
@@ -220,8 +232,8 @@ class FileSyncTask(SyncTask):
                                 f"Warning: Invalid conflict_resolution option: {conflict_resolution}"
                             )
 
-                    elif source_mtime > dest_mtime or source_size != dest_size:
-                        # Source is newer or sizes are different, upload it
+                    elif source_mtime > dest_mtime:
+                        # Source is newer but checksum are the same, upload it
                         self.connector.upload_file(
                             source_entry_path, destination_entry_path
                         )
