@@ -18,7 +18,7 @@ Syncary is a Python library for synchronizing and managing various types of data
 
 You can install Syncary using pip:
 
-```
+```sh
 pip install syncary
 ```
 
@@ -61,99 +61,66 @@ Syncary is released under the MIT License. See the [LICENSE](LICENSE) file for m
 
 This README assumes that "Syncary" is a synchronization library that can handle various types of data (files, calendars, contacts, etc.) across different platforms and services. The actual project could be different, but this gives an idea of how the README might look based on the name and the assumption that it's a Python project related to synchronization.
 
-
-# Syncary Roadmap
-
-## Version 1.0 - Core Functionality
+## Core Functionality
 
 ### File Synchronization
+
 - [ ] Implement basic local-to-local folder sync
 - [ ] Add support for Dropbox integration
 - [ ] Develop Google Drive sync capabilities
 - [ ] Create OneDrive sync module
 
 ### Calendar Synchronization
+
 - [ ] Implement Google Calendar sync
 - [ ] Develop Apple Calendar integration
 - [ ] Add support for Outlook calendar sync
 
 ### Contact Synchronization
+
 - [ ] Create Google Contacts sync module
 - [ ] Implement iCloud contacts integration
 - [ ] Develop Microsoft Exchange contacts sync
 
 ### Core Features
+
 - [ ] Implement bi-directional sync with basic conflict resolution
 - [ ] Develop a simple CLI for managing sync tasks
 - [ ] Create basic logging and error reporting system
 
-## Enhanced Functionality
-
-### File Synchronization
-- [ ] Add support for selective file/folder sync
-- [ ] Implement file version history
-- [ ] Develop support for large file handling and resume capability
-
-### Calendar Synchronization
-- [ ] Add support for calendar event attachments
-- [ ] Implement recurring event handling
-- [ ] Develop timezone management for calendar events
-
-### Contact Synchronization
-- [ ] Add support for contact groups/categories
-- [ ] Implement contact photo sync
-- [ ] Develop handling for custom contact fields
-
-### Core Features
-- [ ] Enhance conflict resolution with user-definable rules
-- [ ] Implement scheduled sync jobs
-- [ ] Develop a basic GUI for managing sync tasks
-
 ## Advanced Features
 
-### File Synchronization
 - [ ] Implement end-to-end encryption for synced files
 - [ ] Add support for more cloud services (Box, Amazon S3, etc.)
 - [ ] Develop a file deduplication system
 
-### Calendar Synchronization
 - [ ] Add support for shared calendars
 - [ ] Implement calendar-specific color coding
 - [ ] Develop support for calendar permissions and sharing
 
-### Contact Synchronization
 - [ ] Add support for social media profile linking
 - [ ] Implement contact merge suggestions
 - [ ] Develop a contact deduplication system
 
-### New Sync Types
 - [ ] Implement bookmark synchronization across browsers
 - [ ] Develop password manager sync capabilities
 - [ ] Add support for note synchronization (Evernote, OneNote, etc.)
 
-### Core Features
 - [ ] Implement a plugin system for easy extension
 - [ ] Develop advanced reporting and analytics
 - [ ] Create a web interface for remote management
-
-## Performance and Scalability
 
 - [ ] Optimize sync algorithms for improved speed
 - [ ] Implement delta sync to reduce data transfer
 - [ ] Develop support for multi-threaded and distributed sync operations
 - [ ] Add support for syncing between multiple devices simultaneously
 
-## Enterprise Features
-
 - [ ] Implement team and organization management
 - [ ] Develop advanced access control and permissions
 - [ ] Add support for compliance and auditing features
 - [ ] Implement advanced encryption and security features
 
-## Ongoing
-
 - Continuous improvement of documentation
 - Regular updates to supported service APIs
 - Bug fixes and performance enhancements
 - Community feedback incorporation
-
